@@ -11,31 +11,31 @@ Result resultUsingIfs(Board board){
 
 
 Result resultUsingRules(Board board, rulesToResults){
-    def firstItemWhoseRuleApplies = rulesToResults.find{ ruleToResult -> (ruleToResult.key.apply(board)) }
-    return firstItemWhoseRuleApplies.value
+    def firstItemWhoseRuleMatches = rulesToResults.find{ ruleToResult -> (ruleToResult.key.matchesFor(board)) }
+    return firstItemWhoseRuleMatches.value
 }
 
 class XWinsRule{
-    boolean apply(board){
+    boolean matchesFor(board){
         return board.anyLineFilledWith(Token.X) || board.anyColumnFilledWith(Token.X) || board.anyDiagonalFilledWith(Token.X)
     }
 }
 
 class OWinsRule{
-    boolean apply(board){
+    boolean matchesFor(board){
         return board.anyLineFilledWith(Token.O) || board.anyColumnFilledWith(Token.O) || board.anyDiagonalFilledWith(Token.O)
     }
 }
 
 class DefaultRule{
-    boolean apply(board){
+    boolean matchesFor(board){
         return true
     }
 }
 
 
 class NotFilledYetRule{
-    boolean apply(board){
+    boolean matchesFor(board){
         return board.notFilledYet()
     }
 }
@@ -79,31 +79,31 @@ class Board{
         return anyFilledWith(diagonals(content), token)
     }
 
-    private def anyFilledWith(collection, token){
+    private static def anyFilledWith(collection, token){
         collection.any { item ->
             item.every { cell -> cell == token }
         }
     }
 
-    private def rotate(array){
+    private static def rotate(array){
         return array.transpose()
     }
 
-    private def lines(array){
+    private static def lines(array){
         return array
     }
 
-    private def columns(array){
+    private static def columns(array){
         return lines(rotate(array))
     }
 
-    private def diagonals(array){
+    private static def diagonals(array){
         def size = array.size() - 1
-        def mainDiagonal = (0..size).collect().inject([]){ diagonal, index -> 
+        def mainDiagonal = (0..size).inject([]){ diagonal, index -> 
             diagonal + array[index][index]
         }
 
-        def secondaryDiagonal = (0..size).collect().inject([]){ diagonal, index -> 
+        def secondaryDiagonal = (0..size).inject([]){ diagonal, index -> 
             diagonal + array[index][size - index]
         }
 
@@ -113,7 +113,6 @@ class Board{
 
 
 def rulesToResults = [(new XWinsRule()) : Result.XWins, (new OWinsRule()) : Result.OWins, (new NotFilledYetRule()) : Result.NotOverYet, (new DefaultRule()) : Result.Draw]
-
 
 def emptyBoard = new Board()
 assert resultUsingIfs(emptyBoard) == Result.NotOverYet

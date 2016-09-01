@@ -2,11 +2,42 @@
 
 import groovy.transform.ToString
 
-Result result(Board board){
+Result resultUsingIfs(Board board){
     if(board.anyLineFilledWith(Token.X) || board.anyColumnFilledWith(Token.X) || board.anyDiagonalFilledWith(Token.X)) return Result.XWins;
     if(board.anyLineFilledWith(Token.O) || board.anyColumnFilledWith(Token.O) || board.anyDiagonalFilledWith(Token.O)) return Result.OWins;
     if(board.notFilledYet()) return Result.NotOverYet;
     return Result.Draw;
+}
+
+
+Result resultUsingRules(Board board, rulesToResults){
+    def firstItemWhoseRuleApplies = rulesToResults.find{ ruleToResult -> (ruleToResult.key.apply(board)) }
+    return firstItemWhoseRuleApplies.value
+}
+
+class XWinsRule{
+    boolean apply(board){
+        return board.anyLineFilledWith(Token.X) || board.anyColumnFilledWith(Token.X) || board.anyDiagonalFilledWith(Token.X)
+    }
+}
+
+class OWinsRule{
+    boolean apply(board){
+        return board.anyLineFilledWith(Token.O) || board.anyColumnFilledWith(Token.O) || board.anyDiagonalFilledWith(Token.O)
+    }
+}
+
+class DefaultRule{
+    boolean apply(board){
+        return true
+    }
+}
+
+
+class NotFilledYetRule{
+    boolean apply(board){
+        return board.notFilledYet()
+    }
 }
 
 enum Result{
@@ -80,9 +111,14 @@ class Board{
     }
 }
 
+
+def rulesToResults = [(new XWinsRule()) : Result.XWins, (new OWinsRule()) : Result.OWins, (new NotFilledYetRule()) : Result.NotOverYet, (new DefaultRule()) : Result.Draw]
+
+
 def emptyBoard = new Board()
-assert result(emptyBoard) == Result.NotOverYet
-println "Result for board $emptyBoard is ${result(emptyBoard)}"
+assert resultUsingIfs(emptyBoard) == Result.NotOverYet
+assert resultUsingRules(emptyBoard, rulesToResults) == Result.NotOverYet
+println "Result for board $emptyBoard is ${resultUsingIfs(emptyBoard)}"
 
 def unfinishedBoard = new Board(
     content: [
@@ -92,8 +128,9 @@ def unfinishedBoard = new Board(
     ]
 )
 
-assert result(unfinishedBoard) == Result.NotOverYet
-println "Result for board $unfinishedBoard is ${result(unfinishedBoard)}"
+assert resultUsingIfs(unfinishedBoard) == Result.NotOverYet
+assert resultUsingRules(unfinishedBoard, rulesToResults) == Result.NotOverYet
+println "Result for board $unfinishedBoard is ${resultUsingIfs(unfinishedBoard)}"
 
 def xWonBoard = new Board(
     content: [
@@ -103,8 +140,9 @@ def xWonBoard = new Board(
     ]
 )
 
-assert result(xWonBoard) == Result.XWins
-println "Result for board $xWonBoard is ${result(xWonBoard)}"
+assert resultUsingIfs(xWonBoard) == Result.XWins
+assert resultUsingRules(xWonBoard, rulesToResults) == Result.XWins
+println "Result for board $xWonBoard is ${resultUsingIfs(xWonBoard)}"
 
 def oWonBoard = new Board(
     content: [
@@ -114,8 +152,9 @@ def oWonBoard = new Board(
     ]
 )
 
-assert result(oWonBoard) == Result.OWins
-println "Result for board $oWonBoard is ${result(oWonBoard)}"
+assert resultUsingIfs(oWonBoard) == Result.OWins
+assert resultUsingRules(oWonBoard, rulesToResults) == Result.OWins
+println "Result for board $oWonBoard is ${resultUsingIfs(oWonBoard)}"
 
 def drawBoard = new Board(
     content: [
@@ -124,5 +163,6 @@ def drawBoard = new Board(
                 [Token.X, Token.O, Token.X]
     ]
 )
-assert result(drawBoard) == Result.Draw
-println "Result for board $drawBoard is ${result(drawBoard)}"
+assert resultUsingIfs(drawBoard) == Result.Draw
+assert resultUsingRules(drawBoard, rulesToResults) == Result.Draw
+println "Result for board $drawBoard is ${resultUsingIfs(drawBoard)}"
